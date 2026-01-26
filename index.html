@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משקפיים חכמים – ניהול פרופילים</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary:    #5b7fff;       /* כחול רך */
+            --primary-dark: #4a6be6;
+            --accent:     #6cc7c0;       /* טורקיז-ירוק עדין */
+            --bg-start:   #f0f4ff;
+            --bg-end:     #e8f0ff;
+            --glass-bg:   rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(200, 220, 255, 0.4);
+            --text:       #2d3748;
+            --text-muted: #718096;
+            --card-shadow: 0 10px 30px rgba(100, 140, 255, 0.12);
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            background-attachment: fixed;
+        }
+
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(14px) saturate(160%);
+            -webkit-backdrop-filter: blur(14px) saturate(160%);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .navbar {
+            background: rgba(255,255,255,0.7) !important;
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary) !important;
+        }
+
+        h3, h4, h5 { font-weight: 600; color: var(--primary-dark); }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+            border: none;
+            border-radius: 50px;
+            padding: 0.7rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(91, 127, 255, 0.25);
+        }
+
+        .btn-success {
+            background-color: #4caf9e;
+            border: none;
+            border-radius: 50px;
+            padding: 0.7rem 2.5rem;
+        }
+
+        .btn-outline-light {
+            border-color: rgba(91,127,255,0.5);
+            color: var(--primary);
+        }
+
+        .form-control {
+            background: rgba(255,255,255,0.8);
+            border: 1px solid rgba(91,127,255,0.3);
+            color: var(--text);
+            border-radius: 12px;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.25rem rgba(91,127,255,0.15);
+        }
+
+        .form-control::placeholder { color: var(--text-muted); }
+
+        #qr-reader, #video {
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid rgba(91,127,255,0.2);
+        }
+
+        #myProgress {
+            background: rgba(200,220,255,0.3);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        #myBar {
+            background: linear-gradient(90deg, var(--accent), #5b9fff);
+            border-radius: 999px;
+            transition: width 0.4s ease;
+        }
+
+        .profile-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .profile-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 35px rgba(100,140,255,0.18);
+        }
+
+        .btn-sm {
+            border-radius: 50px;
+            padding: 0.4rem 1.1rem;
+        }
+
+        .text-muted { color: var(--text-muted) !important; }
+
+        .container { max-width: 1140px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar glass fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">משקפיים חכמים</a>
+        </div>
+    </nav>
+
+    <div class="container pt-5 mt-5">
+
+        <div class="glass p-4 p-md-5 mb-5 text-center">
+            <h2 class="mb-4">ניהול פרופילים משפחתיים</h2>
+            <p class="lead mb-5" style="color: var(--text-muted);">סרוק • זיהוי • צור ונהל פרופילים בקלות</p>
+
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="glass p-4">
+                        <h4 class="mb-3">שלב 1: סריקת ברקוד</h4>
+                        <button class="btn btn-primary btn-lg mt-2" onclick="startBarcodeScan()">פתח סורק</button>
+                        <div id="qr-reader" class="mt-4" style="display:none;"></div>
+                        <div id="barcode-result" class="mt-3 fw-bold" style="color: var(--primary);"></div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="glass p-4">
+                        <h4 class="mb-3">שלב 2: סריקת פנים</h4>
+                        <button class="btn btn-primary btn-lg mt-2" onclick="startFaceScan()">התחל סריקה</button>
+                        <video id="video" autoplay playsinline class="mt-4 w-100" style="display:none;"></video>
+                        <div id="progress-container" class="mt-4" style="display:none;">
+                            <div id="myProgress"><div id="myBar">0%</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass p-4 p-md-5 mb-5" id="profile-section" style="display:none;">
+            <h3 class="text-center mb-4" id="form-title">צור פרופיל חדש</h3>
+            <form id="profile-form">
+                <input type="hidden" id="edit-index" value="-1">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <label class="form-label">שם מלא</label>
+                        <input type="text" class="form-control" id="name" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">גיל</label>
+                        <input type="number" class="form-control" id="age" min="0" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">קרבת משפחה</label>
+                        <input type="text" class="form-control" id="relation" required>
+                    </div>
+                </div>
+                <div class="d-grid gap-3 d-md-flex justify-content-md-center mt-5">
+                    <button type="submit" class="btn btn-success btn-lg px-5" id="submit-btn">שמור</button>
+                    <button type="button" class="btn btn-outline-light btn-lg px-5" onclick="cancelEdit()">בטל</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="glass p-4 p-md-5">
+            <h4 class="mb-4 text-center">פרופילים שמורים</h4>
+            <div class="row g-4" id="profiles-list">
+                <!-- כרטיסיות כאן -->
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // אותו JavaScript כמו בגרסה הקודמת – ללא שינוי
+        let profiles = JSON.parse(localStorage.getItem('familyProfiles')) || [];
+        let editingIndex = -1;
+        let html5QrcodeScanner = null;
+
+        window.onload = renderProfiles;
+
+        function renderProfiles() {
+            const container = document.getElementById('profiles-list');
+            container.innerHTML = profiles.length === 0 
+                ? '<p class="text-center py-5" style="color:var(--text-muted);">עדיין אין פרופילים...</p>'
+                : '';
+
+            profiles.forEach((p, i) => {
+                const col = document.createElement('div');
+                col.className = 'col-md-6 col-lg-4';
+                col.innerHTML = `
+                    <div class="profile-card p-4 text-center">
+                        <h5 class="mb-3" style="color:var(--primary-dark);">${p.name}</h5>
+                        <p class="mb-2">גיל: ${p.age}</p>
+                        <p class="mb-4">קירבה: ${p.relation}</p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <button class="btn btn-sm btn-outline-light" onclick="editProfile(${i})">ערוך</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteProfile(${i})">מחק</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(col);
+            });
+        }
+
+        function startBarcodeScan() {
+            document.getElementById('qr-reader').style.display = 'block';
+            if (html5QrcodeScanner) return;
+            html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 220 });
+            html5QrcodeScanner.render((text) => {
+                document.getElementById('barcode-result').textContent = 'נקרא: ' + text;
+                html5QrcodeScanner.clear();
+            }, () => {});
+        }
+
+        function startFaceScan() {
+            const video = document.getElementById('video');
+            const progress = document.getElementById('progress-container');
+            video.style.display = 'block';
+            progress.style.display = 'block';
+
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+                .then(stream => {
+                    video.srcObject = stream;
+                    moveProgress();
+                })
+                .catch(err => alert('שגיאה: ' + err.message));
+        }
+
+        function moveProgress() {
+            let width = 0;
+            const bar = document.getElementById('myBar');
+            const id = setInterval(() => {
+                if (width >= 100) {
+                    clearInterval(id);
+                    bar.textContent = 'הושלם!';
+                    setTimeout(() => {
+                        document.getElementById('video').style.display = 'none';
+                        document.getElementById('progress-container').style.display = 'none';
+                        document.getElementById('profile-section').style.display = 'block';
+                        window.scrollTo({ top: document.getElementById('profile-section').offsetTop - 100, behavior: 'smooth' });
+                    }, 1000);
+                } else {
+                    width++;
+                    bar.style.width = width + '%';
+                    bar.textContent = width + '%';
+                }
+            }, 35);
+        }
+
+        document.getElementById('profile-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            const age  = parseInt(document.getElementById('age').value);
+            const relation = document.getElementById('relation').value.trim();
+
+            if (!name || isNaN(age) || !relation) return alert('מלא את כל השדות');
+
+            const profile = { name, age, relation };
+
+            if (editingIndex >= 0) {
+                profiles[editingIndex] = profile;
+                editingIndex = -1;
+                document.getElementById('form-title').textContent = 'צור פרופיל חדש';
+                document.getElementById('submit-btn').textContent = 'שמור';
+            } else {
+                profiles.push(profile);
+            }
+
+            localStorage.setItem('familyProfiles', JSON.stringify(profiles));
+            renderProfiles();
+            e.target.reset();
+            document.getElementById('profile-section').style.display = 'none';
+        });
+
+        function editProfile(index) {
+            const p = profiles[index];
+            document.getElementById('name').value = p.name;
+            document.getElementById('age').value = p.age;
+            document.getElementById('relation').value = p.relation;
+            editingIndex = index;
+            document.getElementById('form-title').textContent = 'עריכת פרופיל';
+            document.getElementById('submit-btn').textContent = 'עדכן';
+            document.getElementById('profile-section').style.display = 'block';
+            window.scrollTo({ top: document.getElementById('profile-section').offsetTop - 100, behavior: 'smooth' });
+        }
+
+        function deleteProfile(index) {
+            if (!confirm('למחוק?')) return;
+            profiles.splice(index, 1);
+            localStorage.setItem('familyProfiles', JSON.stringify(profiles));
+            renderProfiles();
+        }
+
+        function cancelEdit() {
+            document.getElementById('profile-form').reset();
+            editingIndex = -1;
+            document.getElementById('form-title').textContent = 'צור פרופיל חדש';
+            document.getElementById('submit-btn').textContent = 'שמור';
+            document.getElementById('profile-section').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
